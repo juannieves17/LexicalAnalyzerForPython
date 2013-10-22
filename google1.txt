@@ -1,0 +1,49 @@
+import sys
+import re
+def extract_names(filename):
+  names = []
+  # Open and read the file.
+  f = open(filename, 'rU')
+  text = f.read()
+  year_match = re.search(r'Popularity\sin\s(\d\d\d\d)', text)
+  if not year_match:
+    # We didn't find a year, so we'll exit with an error message.
+    sys.stderr.write('Couldn\'t find the year!\n')
+    sys.exit(1)
+  year = year_match.group(1)
+  names.append(year)
+  # Extract all the data tuples with a findall()
+  # each tuple is: (rank, boy-name, girl-name)
+  tuples = re.findall(r'gh', text)
+  names_to_rank =  {}
+  for rank_tuple in tuples:
+    (rank, boyname, girlname) = rank_tuple  # unpack the tuple into 3 vars
+    if boyname not in names_to_rank:
+      names_to_rank[boyname] = rank
+    if girlname not in names_to_rank:
+      names_to_rank[girlname] = rank
+  sorted_names = sorted(names_to_rank.keys())
+  # Build up result list, one element per line
+  for name in sorted_names:
+    names.append(name + " " + names_to_rank[name])
+  return names
+def main():
+  args = sys.argv[1:]
+  if not args:
+    print 'usage: [--summaryfile] file [file ...]'
+    sys.exit(1)
+  # Notice the summary flag and remove it from args if it is present.
+  summary = False
+  if args[0] == '--summaryfile':
+    summary = True
+    del args[0]
+  for filename in args:
+    names = extract_names(filename)
+    # Make text out of the whole list
+    text = '\n'.join(names)
+    if summary:
+      outf = open(filename + '.summary', 'w')
+      outf.write(text + '\n')
+      outf.close()
+    else:
+      print text+y
